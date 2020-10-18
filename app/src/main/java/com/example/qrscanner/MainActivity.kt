@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
+import android.view.WindowManager
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -78,7 +80,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     // After scanning
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         var result: IntentResult? =
@@ -88,12 +89,22 @@ class MainActivity : AppCompatActivity() {
             if (result.contents != null) {
                 if (editTxtApiUrl.text.isNotEmpty())
                 {
+                    // Show loading icon and disable inputs
+                    loadingPanel.visibility = View.VISIBLE
+                    getWindow().setFlags(
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
                     // Append result of api call to url
                     GlobalScope.launch {
                         val apiAsyncTask = async { PostApi() }
                         val apiResult = apiAsyncTask.await()
                         withContext(Dispatchers.Main) {
                             txtValue.text = result.contents + "?dtoken=" + apiResult + "&source="
+
+                            // Remove loading icon and enable inputs
+                            loadingPanel.visibility = View.GONE
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                         }
                     }
                 }
